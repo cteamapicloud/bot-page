@@ -1,459 +1,311 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI News Digest</title>
   <style>
-    /* Reset */
-    body, h1, h2, h3, p, input, button {
+    /* 全局樣式 */
+    body {
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    }
-    body {
-      background-color: var(--bg);
-      color: var(--text);
+      background-color: #f5f5f5;
+      color: #333;
       transition: background-color 0.3s, color 0.3s;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
     }
-    :root {
-      --bg: #fff;
-      --text: #222;
-      --card-bg: #f9f9f9;
-      --card-hover-bg: #e6e6e6;
-      --tag-bg: #d1e7ff;
-      --tag-text: #0b3d91;
-    }
-    @media(prefers-color-scheme: dark) {
-      :root {
-        --bg: #121212;
-        --text: #eee;
-        --card-bg: #1e1e1e;
-        --card-hover-bg: #333;
-        --tag-bg: #154c8c;
-        --tag-text: #a9cdfb;
-      }
-    }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 8px;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    .update-time {
-      font-size: 0.9rem;
-      color: var(--tag-text);
-      margin-bottom: 1em;
-    }
-    .quote {
-      font-weight: bold;
-      font-size: 1.1rem;
-      margin-bottom: 1rem;
-      font-style: italic;
-    }
-    .top3-container {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-    .top3-card {
-      flex: 1 0 32%;
-      background-color: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgb(0 0 0 / 0.1);
-      padding: 15px;
-      transition: background-color 0.3s;
-      cursor: pointer;
-    }
-    .top3-card:hover {
-      background-color: var(--card-hover-bg);
-    }
-    .top3-title {
-      font-weight: bold;
-      margin-bottom: 0.4rem;
-      font-size: 1.2rem;
-      color: var(--text);
-    }
-    .top3-tldr, .top3-why {
-      font-size: 0.9rem;
-      margin-bottom: 0.6rem;
-    }
-    .top3-why {
-      font-style: italic;
-      color: var(--tag-text);
-    }
-    .search-bar {
-      margin-bottom: 1.2rem;
-    }
-    input[type="search"] {
-      width: 100%;
-      padding: 10px 15px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      color: var(--text);
-      background-color: var(--card-bg);
-      transition: border-color 0.3s;
-    }
-    input[type="search"]:focus {
-      outline: none;
-      border-color: #0077cc;
-    }
-    .tags-filter {
-      margin-bottom: 1rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-    .tag {
-      background-color: var(--tag-bg);
-      color: var(--tag-text);
-      padding: 5px 12px;
-      font-size: 0.85rem;
-      border-radius: 12px;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s;
-    }
-    .tag.selected {
-      background-color: #004a99;
+    header {
+      background-color: #0078d7;
       color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .news-list {
+    header h1 {
+      font-size: 1.2rem;
+      margin: 0;
+    }
+    main {
+      max-width: 960px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    /* Hero 深讀卡片 */
+    .hero {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .hero h2 {
+      margin-top: 0;
+    }
+    /* 新聞卡片牆 */
+    .news-wall {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 15px;
-      margin-bottom: 2rem;
+      gap: 20px;
     }
     .news-card {
-      background-color: var(--card-bg);
+      background-color: white;
       border-radius: 8px;
-      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
-      padding: 1rem;
-      transition: background-color 0.3s;
-      cursor: default;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 15px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
-    .news-card:hover {
-      background-color: var(--card-hover-bg);
+    .news-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.1rem;
     }
-    .news-title {
-      font-weight: bold;
-      font-size: 1rem;
-      color: var(--text);
-      margin-bottom: 0.3rem;
-    }
-    .news-meta {
-      font-size: 0.75rem;
-      color: var(--tag-text);
-      margin-bottom: 0.6rem;
-    }
-    .news-summary {
-      flex-grow: 1;
+    .news-card .meta {
       font-size: 0.9rem;
-      color: var(--text);
-      margin-bottom: 0.6rem;
+      color: #777;
+      margin-bottom: 10px;
     }
-    .news-tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 0.6rem;
+    .news-card .summary {
+      flex-grow: 1;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
     }
-    .news-tag {
-      font-size: 0.75rem;
-      background-color: var(--tag-bg);
-      color: var(--tag-text);
-      padding: 3px 8px;
-      border-radius: 10px;
-      user-select: none;
+    .news-card .tags {
+      margin-bottom: 10px;
     }
-    .news-link-btn {
+    .tag {
+      display: inline-block;
+      background-color: #0078d7;
+      color: white;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      margin-right: 6px;
+    }
+    .news-card a {
       align-self: flex-start;
       text-decoration: none;
-      color: #0077cc;
-      font-weight: 600;
-      border: 1px solid #0077cc;
-      padding: 5px 10px;
-      border-radius: 6px;
-      transition: background-color 0.3s, color 0.3s;
+      color: #0078d7;
+      font-weight: bold;
     }
-    .news-link-btn:hover {
-      background-color: #0077cc;
-      color: white;
-    }
-    .trends {
+    /* 搜尋和篩選區 */
+    .search-filter {
       display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 2rem;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .search-filter input[type="text"] {
+      flex-grow: 1;
+      padding: 8px 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      max-width: 400px;
+    }
+    .tags-filter {
+      display: flex;
+      gap: 10px;
       flex-wrap: wrap;
     }
-    .trend-chip {
-      background-color: var(--tag-bg);
-      color: var(--tag-text);
-      padding: 8px 15px;
-      border-radius: 20px;
-      font-weight: 600;
-      user-select: none;
-      cursor: default;
+    .tags-filter button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 12px;
+      background-color: #ccc;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #333;
     }
-    footer {
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--tag-text);
-      margin-bottom: 30px;
+    .tags-filter button.active {
+      background-color: #0078d7;
+      color: white;
     }
-    @media(max-width: 600px) {
-      .top3-container {
-        flex-direction: column;
+    /* 趨勢區 */
+    .trends {
+      background-color: white;
+      border-radius: 8px;
+      padding: 15px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 30px;
+      max-width: 400px;
+    }
+    /* 深色模式 */
+    body.dark {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    body.dark header {
+      background-color: #1a73e8;
+    }
+    body.dark .hero, body.dark .news-card, body.dark .trends {
+      background-color: #1e1e1e;
+      box-shadow: none;
+    }
+    body.dark .tags-filter button {
+      background-color: #333;
+      color: #ccc;
+    }
+    body.dark .tags-filter button.active {
+      background-color: #1a73e8;
+      color: white;
+    }
+    body.dark .news-card a {
+      color: #8ab4f8;
+    }
+    /* 手機適配 */
+    @media (max-width: 600px) {
+      main {
+        padding: 0 10px;
       }
-      .top3-card {
-        flex: none;
-        width: 100%;
+      .search-filter {
+        flex-direction: column;
       }
     }
   </style>
 </head>
 <body>
-  <header class="header">
-    <h1>AI News Digest</h1>
-    <div class="quote">今天的 AI 圈一句話：科技引領未來變革</div>
-    <div class="update-time" id="last-updated"></div>
+  <header>
+    <h1>今天的 AI 圈一句話</h1>
+    <div id="update-time">最後更新：2026-02-01 15:20</div>
   </header>
+  <main>
+    <section class="hero" id="hero">
+      <h2>Nvidia CEO否認投資停滯報導</h2>
+      <p><strong>TL;DR：</strong>Nvidia CEO Jensen Huang表示，有關與OpenAI 1000億美元投資停滯的報導是錯誤的，強調將繼續積極參與最新資金輪，視OpenAI為當代最具影響力的科技公司之一。</p>
+      <p>1. Nvidia CEO Jensen Huang表示，報導有關合作摩擦是無稽之談。
+      <br>2. 強調投資尚未停滯，並持續支持OpenAI。
+      <br>3. Nvidia視OpenAI為最重要的科技公司之一。
+      <br>4. 合作推動AI領域突破與系統擴展。
+      <br>5. 關注競爭對手Anthropic與Google。
+      </p>
+      <p><em>重要性：</em>揭示AI生態中Nvidia與OpenAI合作關係，影響產業資金與技術發展。</p>
+      <a href="https://techcrunch.com/2026/01/31/nvidia-ceo-pushes-back-against-report-that-his-companys-100b-openai-investment-has-stalled/" target="_blank">閱讀原文</a>
+    </section>
+    <section class="search-filter">
+      <input type="text" id="search-input" placeholder="搜尋標題或摘要..." />
+      <div class="tags-filter" id="tags-filter">
+        <!-- 標籤篩選按鈕 -->
+      </div>
+    </section>
+    <section class="news-wall" id="news-wall">
+      <!-- 新聞卡片牆放這裡 -->
+    </section>
+    <aside class="trends" id="trends">
+      <h3>本次趨勢關鍵詞</h3>
+      <ul id="trend-list">
+        <!-- 趨勢關鍵詞列表 -->
+      </ul>
+    </aside>
+  </main>
+  <script type="module">
+    import newsData from './news-data.js';
 
-  <section class="top3-container" id="top3-news">
-    <!-- Top 3 大卡片新聞 -->
-  </section>
+    const tags = ["Model", "Product", "Funding", "Policy", "Safety", "Research", "Event"];
+    let activeTags = new Set();
 
-  <section class="search-bar">
-    <input type="search" id="search-input" placeholder="搜尋標題或摘要..." autocomplete="off" />
-  </section>
+    const newsWall = document.getElementById("news-wall");
+    const tagsFilter = document.getElementById("tags-filter");
+    const searchInput = document.getElementById("search-input");
+    const trendList = document.getElementById("trend-list");
 
-  <section class="tags-filter" id="tags-filter">
-    <!-- 標籤篩選按鈕 -->
-  </section>
-
-  <section class="news-list" id="news-list">
-    <!-- 其餘新聞卡片 -->
-  </section>
-
-  <section class="trends" id="trends">
-    <!-- 趨勢關鍵詞 -->
-  </section>
-
-  <footer>
-    此頁為摘要整理，請以原文為準。
-  </footer>
-
-  <script>
-    // 模擬假新聞資料
-    const newsData = [
-      {
-        id: 1,
-        title: "OpenAI 發布 GPT-5，突破自我學習能力",
-        author: "Jane Doe",
-        date: "2026-01-29",
-        source: "TechCrunch",
-        url: "https://techcrunch.com/gpt-5-launch",
-        summary: "GPT-5 擁有前所未有的自我學習能力，使人工智慧更接近人類智慧。",
-        tags: ["Model", "Research"],
-        tldr: "突破性自我學習能力推動 AI 進化",
-        whyImportant: "AI 領域的重大突破，將引發新一輪技術競賽。"
-      },
-      {
-        id: 2,
-        title: "Google AI 推出全新語音識別模型",
-        author: "John Smith",
-        date: "2026-01-30",
-        source: "TechCrunch",
-        url: "https://techcrunch.com/google-voice-ai",
-        summary: "新模型提升語音識別準確率，應用範圍涵蓋醫療與客服。",
-        tags: ["Model", "Product"],
-        tldr: "語音識別技術重大提升",
-        whyImportant: "改善了多行業的人機互動體驗。"
-      },
-      {
-        id: 3,
-        title: "AI 在醫療領域的新應用",
-        author: "Alice Chen",
-        date: "2026-01-31",
-        source: "TechCrunch",
-        url: "https://techcrunch.com/ai-healthcare",
-        summary: "AI 助力醫療診斷與預測，提升治療效果與效率。",
-        tags: ["Product", "Research"],
-        tldr: "醫療 AI 發展迅速",
-        whyImportant: "提高醫療服務的精準度和效率。"
-      },
-      // 其餘新聞可依此格式補充
-    ];
-
-    let filteredTags = new Set();
-    let searchTerm = "";
-
-    function renderLastUpdated() {
-      const now = new Date();
-      const updateElem = document.getElementById('last-updated');
-      updateElem.textContent = `最後更新時間：${now.toLocaleString()}`;
-    }
-
-    function renderTagsFilter() {
-      const allTags = new Set(newsData.flatMap(n => n.tags));
-      const container = document.getElementById('tags-filter');
-      container.innerHTML = '';
-      allTags.forEach(tag => {
-        const button = document.createElement('button');
-        button.className = 'tag';
-        button.textContent = tag;
-        button.onclick = () => {
-          if (filteredTags.has(tag)) {
-            filteredTags.delete(tag);
-            button.classList.remove('selected');
-          } else {
-            filteredTags.add(tag);
-            button.classList.add('selected');
-          }
-          renderNewsList();
-        };
-        container.appendChild(button);
+    function createTagButton(tag) {
+      const btn = document.createElement("button");
+      btn.textContent = tag;
+      btn.addEventListener("click", () => {
+        if (activeTags.has(tag)) {
+          activeTags.delete(tag);
+          btn.classList.remove("active");
+        } else {
+          activeTags.add(tag);
+          btn.classList.add("active");
+        }
+        renderNews();
       });
+      return btn;
     }
 
-    function renderTop3News() {
-      const container = document.getElementById('top3-news');
-      container.innerHTML = '';
-      const top3 = newsData.slice(0, 3);
-      top3.forEach(news => {
-        const card = document.createElement('div');
-        card.className = 'top3-card';
+    function createNewsCard(article) {
+      const card = document.createElement("article");
+      card.className = "news-card";
+      const title = document.createElement("h3");
+      const titleLink = document.createElement("a");
+      titleLink.href = article.url;
+      titleLink.textContent = article.title;
+      titleLink.target = "_blank";
+      title.appendChild(titleLink);
 
-        const title = document.createElement('div');
-        title.className = 'top3-title';
-        title.textContent = news.title;
-        card.appendChild(title);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `${article.date} | ${article.author}`;
 
-        const tldr = document.createElement('div');
-        tldr.className = 'top3-tldr';
-        tldr.textContent = `TL;DR: ${news.tldr}`;
-        card.appendChild(tldr);
+      const summary = document.createElement("p");
+      summary.className = "summary";
+      summary.textContent = article.summary;
 
-        const why = document.createElement('div');
-        why.className = 'top3-why';
-        why.textContent = `為什麼重要？${news.whyImportant}`;
-        card.appendChild(why);
-
-        card.onclick = () => {
-          window.open(news.url, '_blank');
-        };
-
-        container.appendChild(card);
+      const tagsDiv = document.createElement("div");
+      tagsDiv.className = "tags";
+      article.tags.forEach(tag => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = tag;
+        tagsDiv.appendChild(span);
       });
+
+      card.appendChild(title);
+      card.appendChild(meta);
+      card.appendChild(summary);
+      card.appendChild(tagsDiv);
+
+      return card;
     }
 
-    function renderNewsList() {
-      const container = document.getElementById('news-list');
-      container.innerHTML = '';
-
-      let filteredNews = newsData.slice(3);
-
-      if (filteredTags.size > 0) {
-        filteredNews = filteredNews.filter(news => news.tags.some(tag => filteredTags.has(tag)));
-      }
-
-      if (searchTerm.trim() !== '') {
-        const termLower = searchTerm.toLowerCase();
-        filteredNews = filteredNews.filter(news =>
-          news.title.toLowerCase().includes(termLower) ||
-          news.summary.toLowerCase().includes(termLower)
-        );
-      }
-
-      filteredNews.forEach(news => {
-        const card = document.createElement('div');
-        card.className = 'news-card';
-
-        const title = document.createElement('div');
-        title.className = 'news-title';
-        title.textContent = news.title;
-        card.appendChild(title);
-
-        const meta = document.createElement('div');
-        meta.className = 'news-meta';
-        meta.textContent = `${news.date} | 作者: ${news.author}`;
-        card.appendChild(meta);
-
-        const summary = document.createElement('div');
-        summary.className = 'news-summary';
-        summary.textContent = news.summary;
-        card.appendChild(summary);
-
-        const tagsContainer = document.createElement('div');
-        tagsContainer.className = 'news-tags';
-        news.tags.forEach(tag => {
-          const tagElem = document.createElement('div');
-          tagElem.className = 'news-tag';
-          tagElem.textContent = tag;
-          tagsContainer.appendChild(tagElem);
-        });
-        card.appendChild(tagsContainer);
-
-        const linkBtn = document.createElement('a');
-        linkBtn.className = 'news-link-btn';
-        linkBtn.href = news.url;
-        linkBtn.target = '_blank';
-        linkBtn.textContent = '閱讀原文';
-        card.appendChild(linkBtn);
-
-        container.appendChild(card);
+    function renderNews() {
+      newsWall.innerHTML = "";
+      let filtered = newsData.filter(article => {
+        if (activeTags.size > 0 && !article.tags.some(tag => activeTags.has(tag))) {
+          return false;
+        }
+        const keyword = searchInput.value.trim().toLowerCase();
+        if (keyword) {
+          return article.title.toLowerCase().includes(keyword) || article.summary.toLowerCase().includes(keyword);
+        }
+        return true;
       });
+      filtered.forEach(article => {
+        newsWall.appendChild(createNewsCard(article));
+      });
+      renderTrends(filtered);
     }
 
-    function renderTrends() {
-      // 計算最常出現的標籤
-      const tagCounts = {};
-      newsData.forEach(news => {
-        news.tags.forEach(tag => {
-          tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+    function renderTrends(filteredNews) {
+      const counts = {};
+      filteredNews.forEach(article => {
+        article.tags.forEach(tag => {
+          counts[tag] = (counts[tag] || 0) + 1;
         });
       });
-      // 取前 5 名
-      const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      const container = document.getElementById('trends');
-      container.innerHTML = '';
-      sortedTags.forEach(([tag, count]) => {
-        const chip = document.createElement('div');
-        chip.className = 'trend-chip';
-        chip.textContent = `${tag} (${count})`;
-        container.appendChild(chip);
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      trendList.innerHTML = "";
+      sorted.forEach(([tag, count]) => {
+        const li = document.createElement("li");
+        li.textContent = `${tag} (${count})`;
+        trendList.appendChild(li);
       });
     }
 
-    document.getElementById('search-input').addEventListener('input', (e) => {
-      searchTerm = e.target.value;
-      renderNewsList();
-    });
-
-    function init() {
-      renderLastUpdated();
-      renderTagsFilter();
-      renderTop3News();
-      renderNewsList();
-      renderTrends();
+    function initTagsFilter() {
+      tags.forEach(tag => {
+        tagsFilter.appendChild(createTagButton(tag));
+      });
     }
 
-    init();
+    searchInput.addEventListener("input", renderNews);
+
+    initTagsFilter();
+    renderNews();
   </script>
 </body>
 </html>
